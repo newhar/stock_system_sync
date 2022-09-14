@@ -28,11 +28,15 @@ namedLock 은 공통된 저장소에서 자원의 사용을 확인하고 싶을 
 한 트랜잭션 내에서 특정 메타데이터(문자열)에 대하여 Lock 을 걸고 이를 트랜잭션 종료시 해제 하는 방식으로 사용한다.
 #### 참고  
 https://techblog.woowahan.com/2631/ (우아한 형제들 기술 블로그, mysql 을 사용한 분산락 처리)  
+https://techblog.woowahan.com/2664/ (우아한 형제들 기술 블로그 , hikariCP 커넥션 관련)
 https://hyperconnect.github.io/2019/11/15/redis-distributed-lock-1.html (하이퍼커넥트 기술블로그, redis를 사용한 분산락)  
 
 ### Redis 사용 개선
 #### Lettuce
+spinLock 방식으로 lock을 획득할때까지 대기하였다가 획득 하면 작업을 하는 방식이다. redis 의 setnx 를 사용하여 잠금을 획득/해제 한다.    
+구현히 간단하지만 무한정 대기를 하면 레디스에 부하를 줄 수 있기 때문에 쓰레드의 sleep 을 통하여 조절해야한다.  
+
 #### Redisson
-
-
-
+pub-sub 기반의 message 방식으로 lock을 획득한다.   
+실제 운영환경에서는 재시도가 필요한 경우에는 안정적인 redisson을 사용하고, 그렇지 않은 경우에는 lecttuce 를 사용하여 간단히 구현한다.  
+분산환경에서 트래픽이 많고 비용적 요소를 고려하지 않을때는 성능이 중요할 경우에는 redis를 사용하고 그렇지 않을때는 mysql 등을 사용한다.
