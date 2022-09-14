@@ -3,6 +3,7 @@ package com.example.stock.service;
 import com.example.stock.domain.Stock;
 import com.example.stock.repository.StockRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -51,12 +52,22 @@ public class StockService {
 
     /*
         optimisticLock 은 version 을 통하여 데이터베이스의 상태를 변경하고 만약 동시 접근일 경우 개발자가 다시 시도하도록 파사드 패턴을 구현한다.
-        데이터에비으셍 직접 lock을 걸지 않기 때문에 성능상 이점이 있다.
+        데이터베이스에 직접 lock을 걸지 않기 때문에 성능상 이점이 있다.
         하지만, 데이터베이스의 충돌이 자주 발생한다면 데이터베이스에 lock을 거는 pessimistic lock이 더 좋다.
      */
     @Transactional
     public void decreaseStockWithOptimisticLock(Long productId, Long quantity) {
         Stock product = stockRepository.findByProductIdWithOptimistic(productId);
+
+        product.decreaseStock(quantity);
+
+        stockRepository.saveAndFlush(product);
+    }
+
+    // @Transactional(propagation = Propagation.REQUIRES_NEW) : 항상 새로운 트랜잭션을 시작함을 알린다. 이미 진행중인 트랜잭션 있으면 잠시 보류.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void decreaseStockWithNamedLock(Long id, Long quantity) {
+        Stock product = stockRepository.findByProductId(id).orElseThrow();
 
         product.decreaseStock(quantity);
 
