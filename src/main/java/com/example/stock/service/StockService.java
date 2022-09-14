@@ -48,4 +48,19 @@ public class StockService {
 
         stockRepository.saveAndFlush(product);
     }
+
+    /*
+        optimisticLock 을 DB 에 걸어서 처리한다.
+        version 을 통하여 데이터베이스의 상태를 변경하고 만약 실패할 경우 개발자가 다시 시도하도록 파사드 패턴을 구현한다.
+
+        데이터베이스의 ㅣ동시 접근할 빈도가 잦을 경우
+     */
+    @Transactional
+    public void decreaseStockWithOptimisticLock(Long productId, Long quantity) {
+        Stock product = stockRepository.findByProductIdWithOptimistic(productId);
+
+        product.decreaseStock(quantity);
+
+        stockRepository.saveAndFlush(product);
+    }
 }
