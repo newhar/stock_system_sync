@@ -17,6 +17,14 @@ public class StockService {
 
         product.decreaseStock(quantity);
 
-        stockRepository.saveAndFlush(product); // why need ?
+        stockRepository.saveAndFlush(product);
+    }
+
+    public synchronized void decreaseStockWithSynchronized(Long productId, Long quantity) {
+        Stock product = stockRepository.findByProductId(productId).orElseThrow();
+
+        product.decreaseStock(quantity);
+
+        stockRepository.saveAndFlush(product);
     }
 }
